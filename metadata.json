@@ -1,0 +1,5 @@
+{
+  "name": "医学影像AI分析演示",
+  "description": "模拟医学影像上传与AI识别过程的演示应用",
+  "requestFramePermissions": []
+}
