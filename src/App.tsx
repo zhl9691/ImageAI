@@ -2,15 +2,15 @@ import React, { useState, useRef } from 'react';
 import { Upload, Image as ImageIcon, Activity, CheckCircle2, Loader2, FileImage, Trash2, RotateCcw, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-const steps = [
-  { text: "正在上传...", duration: 1000 },
-  { text: "AI识别分析中，正在识别图A...", duration: 2000 },
-  { text: "AI识别分析中，正在识别图B...", duration: 2000 },
-  { text: "AI识别分析中，正在识别图C...", duration: 2000 },
-  { text: "AI识别分析中，正在识别图D...", duration: 2000 },
-  { text: "AI识别分析中，正在识别图E...", duration: 2000 },
-  { text: "AI识别分析中，正在识别图F...", duration: 2000 },
-  { text: "识别完成", duration: 1000 },
+const baseSteps = [
+  { text: "正在上传...", min: 2000, max: 2000 },
+  { text: "AI识别分析中，正在识别图A...", min: 1000, max: 2000 },
+  { text: "AI识别分析中，正在识别图B...", min: 1000, max: 2000 },
+  { text: "AI识别分析中，正在识别图C...", min: 1000, max: 2000 },
+  { text: "AI识别分析中，正在识别图D...", min: 1000, max: 2000 },
+  { text: "AI识别分析中，正在识别图E...", min: 1000, max: 2000 },
+  { text: "AI识别分析中，正在识别图F...", min: 1000, max: 2000 },
+  { text: "识别完成", min: 2000, max: 2000 },
 ];
 
 const finalResults = [
@@ -27,6 +27,7 @@ export default function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
   const [showResults, setShowResults] = useState(false);
+  const [activeSteps, setActiveSteps] = useState<{text: string, duration: number}[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,13 +58,19 @@ export default function App() {
       return;
     }
     
+    const runSteps = baseSteps.map(step => ({
+      text: step.text,
+      duration: Math.floor(Math.random() * (step.max - step.min + 1)) + step.min
+    }));
+    setActiveSteps(runSteps);
+
     setIsAnalyzing(true);
     setShowResults(false);
     setCurrentStepIndex(0);
 
-    for (let i = 0; i < steps.length; i++) {
+    for (let i = 0; i < runSteps.length; i++) {
       setCurrentStepIndex(i);
-      await new Promise(resolve => setTimeout(resolve, steps[i].duration));
+      await new Promise(resolve => setTimeout(resolve, runSteps[i].duration));
     }
 
     setIsAnalyzing(false);
@@ -192,16 +199,16 @@ export default function App() {
                         exit={{ opacity: 0, y: -10 }}
                         className="text-lg font-medium text-blue-700 text-center px-4"
                       >
-                        {steps[currentStepIndex].text}
+                        {activeSteps[currentStepIndex]?.text}
                       </motion.div>
                       
                       {/* Progress bar */}
                       <div className="w-full max-w-md mt-6 bg-slate-100 rounded-full h-1.5 overflow-hidden">
                         <motion.div 
                           className="bg-blue-600 h-full"
-                          initial={{ width: `${(currentStepIndex / steps.length) * 100}%` }}
-                          animate={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
-                          transition={{ duration: steps[currentStepIndex].duration / 1000, ease: "linear" }}
+                          initial={{ width: `${(currentStepIndex / activeSteps.length) * 100}%` }}
+                          animate={{ width: `${((currentStepIndex + 1) / activeSteps.length) * 100}%` }}
+                          transition={{ duration: (activeSteps[currentStepIndex]?.duration || 1000) / 1000, ease: "linear" }}
                         />
                       </div>
                     </div>
